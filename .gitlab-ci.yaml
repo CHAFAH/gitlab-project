@@ -1,0 +1,115 @@
+stages:
+  - build
+  - static_code_analysis
+  - test
+  - deploy
+
+# Reusable Build Stage Template
+.build-template:
+  stage: build
+  script:
+    - echo "Building on $PLATFORM with $TOOLCHAIN_IMAGE"
+    - echo "Build complete for $PLATFORM"
+  artifacts:
+    paths:
+      - build/$PLATFORM/
+
+# Build Stages
+build:PowerPC:
+  extends: .build-template
+  variables:
+    PLATFORM: "PowerPC"
+    TOOLCHAIN_IMAGE: "powerpc-toolchain:latest"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+build:imx8:
+  extends: .build-template
+  variables:
+    PLATFORM: "imx8"
+    TOOLCHAIN_IMAGE: "imx8-toolchain:latest"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
+
+build:Linux-x:
+  extends: .build-template
+  variables:
+    PLATFORM: "Linux-x"
+    TOOLCHAIN_IMAGE: "linux-x-toolchain:latest"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+# Include external static code analysis
+include:
+  - project: 'external/repo-with-templates'
+    file: '/static-code-analysis.yml'
+
+# Static Code Analysis Stage
+static_code_analysis:
+  stage: static_code_analysis
+  script:
+    - echo "Running static analysis for $PLATFORM"
+  variables:
+    PLATFORM: $CI_JOB_NAME
+  rules:
+    - exists:
+        - "**/*.c"
+        - "**/*.cpp"
+
+# Test Stages
+test:PowerPC:
+  stage: test
+  script:
+    - echo "Testing PowerPC build"
+    - ./run-tests.sh --platform=PowerPC
+  dependencies:
+    - build:PowerPC
+
+test:imx8:
+  stage: test
+  script:
+    - echo "Testing imx8 build"
+    - ./run-tests.sh --platform=imx8
+  dependencies:
+    - build:imx8
+
+test:Linux-x:
+  stage: test
+  script:
+    - echo "Testing Linux-x build"
+    - ./run-tests.sh --platform=Linux-x
+  dependencies:
+    - build:Linux-x
+
+# Deployment Stages
+deploy:PowerPC:
+  stage: deploy
+  script:
+    - echo "Deploying PowerPC build"
+    - ./deploy.sh --platform=PowerPC
+    - echo "Smoke testing PowerPC build"
+    - ./smoke-test.sh --platform=PowerPC
+  dependencies:
+    - build:PowerPC
+
+deploy:imx8:
+  stage: deploy
+  script:
+    - echo "Deploying imx8 build"
+    - ./deploy.sh --platform=imx8
+    - echo "Smoke testing imx8 build"
+    - ./smoke-test.sh --platform=imx8
+  dependencies:
+    - build:imx8
+
+deploy:Linux-x:
+  stage: deploy
+  script:
+    - echo "Deploying Linux-x build"
+    - ./deploy.sh --platform=Linux-x
+    - echo "Smoke testing Linux-x build"
+    - ./smoke-test.sh --platform=Linux-x
+  dependencies:
+    - build:Linux-x
