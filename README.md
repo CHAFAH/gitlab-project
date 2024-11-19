@@ -163,11 +163,60 @@ deploy:PowerPC:
 
 ## **Steps to Run**
 
-1. Commit the `.gitlab-ci.yml` file to the root of your repository.
-2. Push changes to trigger the pipeline.
-3. Monitor the pipeline on GitLab to ensure all stages execute correctly.
-4. Review logs for each stage to verify results and address issues, if any.
+#### **1. Create a GitLab Repository**
+1. Log in to your GitLab account. If you don’t have one, sign up at [GitLab](https://gitlab.com).
+2. Navigate to **"Projects" > "New Project"**.
+3. Select **"Create from scratch"** and provide a name for your repository.
+4. Click **"Create project"**.
 
 ---
 
-This pipeline ensures a comprehensive CI/CD workflow for multi-platform builds while maintaining modularity, reusability, and maintainability.
+#### **2. Add Your Code and Pipeline Configuration**
+1. Clone your new GitLab repository to your local machine:
+
+2. Add your project files (including the `.gitlab-ci.yml` file) to the repository:
+
+3. Stage, commit, and push the files to the GitLab repository:
+   ```bash
+   git add .
+   git commit -m "Initial commit with CI/CD pipeline"
+   git push origin main
+   ```
+
+---
+
+#### **3. Configure GitLab Runners**
+1. Go to your GitLab project.
+2. Navigate to **"Settings" > "CI/CD" > "Runners"**.
+3. Register a runner or use GitLab's shared runners:
+   - For shared runners, ensure the **"Enable shared runners"** toggle is active.
+   - If registering your own runner, follow the on-screen instructions to install and configure it.
+
+---
+
+#### **4. Trigger the Pipeline**
+1. After pushing the `.gitlab-ci.yml` file, the pipeline will trigger automatically if:
+   - The pipeline file is valid.
+   - The repository contains code for the specified stages.
+2. To manually trigger the pipeline:
+   - Navigate to your project in GitLab.
+   - Go to **"CI/CD" > "Pipelines"** and click **"Run pipeline"**.
+   - Select the branch and click **"Run pipeline"**.
+
+---
+
+#### **5. Monitor the Pipeline**
+1. Navigate to **"CI/CD" > "Pipelines"** in your GitLab project.
+2. View the status of each stage:
+   - Green checkmarks indicate success.
+   - Red icons indicate errors or failures.
+3. Click on any stage to view detailed logs for debugging.
+
+---
+
+#### **6. Review Results**
+- Once the pipeline completes successfully:
+  - Review artifacts and reports generated during the pipeline stages.
+  - Check the results of static code analysis, tests, and deployments.
+---
+
