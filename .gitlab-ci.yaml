@@ -4,22 +4,28 @@ stages:
   - test
   - deploy
 
+# Template for reusable build stages
 .build-template:
   stage: build
   script:
     - echo "Building on $PLATFORM with $TOOLCHAIN_IMAGE"
+    - mkdir -p build/$PLATFORM/
+    - touch build/$PLATFORM/$PLATFORM-build-output
     - echo "Build complete for $PLATFORM"
   artifacts:
     paths:
       - build/$PLATFORM/
+  tags:
+    - docker
 
+# Build jobs for each platform
 build:PowerPC:
   extends: .build-template
   variables:
     PLATFORM: "PowerPC"
     TOOLCHAIN_IMAGE: "powerpc-toolchain:latest"
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: '$CI_PIPELINE_SOURCE == "push"'
 
 build:imx8:
   extends: .build-template
@@ -27,9 +33,8 @@ build:imx8:
     PLATFORM: "imx8"
     TOOLCHAIN_IMAGE: "imx8-toolchain:latest"
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_TAG
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_TAG'
 
 build:Linux-x:
   extends: .build-template
@@ -37,26 +42,45 @@ build:Linux-x:
     PLATFORM: "Linux-x"
     TOOLCHAIN_IMAGE: "linux-x-toolchain:latest"
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: '$CI_PIPELINE_SOURCE == "push"'
 
-
+# Static code analysis using an external shared template
 include:
   - project: 'external/repo-with-templates'
     file: '/static-code-analysis.yml'
 
-
-static_code_analysis:
+# Placeholder for static code analysis stages (assuming external templates handle details)
+static_code_analysis:PowerPC:
   stage: static_code_analysis
-  script:
-    - echo "Running static analysis for $PLATFORM"
   variables:
-    PLATFORM: $CI_JOB_NAME
+    PLATFORM: "PowerPC"
+    ARGUMENTS: "--analyze-powerpc"
   rules:
     - exists:
         - "**/*.c"
         - "**/*.cpp"
 
+static_code_analysis:imx8:
+  stage: static_code_analysis
+  variables:
+    PLATFORM: "imx8"
+    ARGUMENTS: "--analyze-imx8"
+  rules:
+    - exists:
+        - "**/*.c"
+        - "**/*.cpp"
 
+static_code_analysis:Linux-x:
+  stage: static_code_analysis
+  variables:
+    PLATFORM: "Linux-x"
+    ARGUMENTS: "--analyze-linux-x"
+  rules:
+    - exists:
+        - "**/*.c"
+        - "**/*.cpp"
+
+# Test jobs for each platform
 test:PowerPC:
   stage: test
   script:
@@ -64,6 +88,8 @@ test:PowerPC:
     - ./run-tests.sh --platform=PowerPC
   dependencies:
     - build:PowerPC
+  tags:
+    - docker
 
 test:imx8:
   stage: test
@@ -72,6 +98,8 @@ test:imx8:
     - ./run-tests.sh --platform=imx8
   dependencies:
     - build:imx8
+  tags:
+    - docker
 
 test:Linux-x:
   stage: test
@@ -80,7 +108,10 @@ test:Linux-x:
     - ./run-tests.sh --platform=Linux-x
   dependencies:
     - build:Linux-x
+  tags:
+    - docker
 
+# Deploy jobs for each platform
 deploy:PowerPC:
   stage: deploy
   script:
@@ -90,6 +121,8 @@ deploy:PowerPC:
     - ./smoke-test.sh --platform=PowerPC
   dependencies:
     - build:PowerPC
+  tags:
+    - docker
 
 deploy:imx8:
   stage: deploy
@@ -100,6 +133,8 @@ deploy:imx8:
     - ./smoke-test.sh --platform=imx8
   dependencies:
     - build:imx8
+  tags:
+    - docker
 
 deploy:Linux-x:
   stage: deploy
@@ -110,3 +145,5 @@ deploy:Linux-x:
     - ./smoke-test.sh --platform=Linux-x
   dependencies:
     - build:Linux-x
+  tags:
+    - docker
