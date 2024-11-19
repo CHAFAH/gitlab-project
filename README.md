@@ -1,6 +1,3 @@
-### README.md
-
----
 
 ## **Project Description**
 
