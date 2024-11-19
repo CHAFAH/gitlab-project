@@ -5,7 +5,6 @@ TARGET_DIR="/opt/deployments/$PLATFORM"
 
 echo "Starting smoke tests for $PLATFORM..."
 
-# Check if the deployed artifact exists
 if [ ! -f "$TARGET_DIR/$PLATFORM-build-output" ]; then
   echo "Error: Deployed artifact for $PLATFORM not found!"
   exit 1
