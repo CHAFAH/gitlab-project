@@ -4,7 +4,6 @@ stages:
   - test
   - deploy
 
-# Reusable Build Stage Template
 .build-template:
   stage: build
   script:
@@ -14,7 +13,6 @@ stages:
     paths:
       - build/$PLATFORM/
 
-# Build Stages
 build:PowerPC:
   extends: .build-template
   variables:
@@ -41,12 +39,12 @@ build:Linux-x:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-# Include external static code analysis
+
 include:
   - project: 'external/repo-with-templates'
     file: '/static-code-analysis.yml'
 
-# Static Code Analysis Stage
+
 static_code_analysis:
   stage: static_code_analysis
   script:
@@ -58,7 +56,7 @@ static_code_analysis:
         - "**/*.c"
         - "**/*.cpp"
 
-# Test Stages
+
 test:PowerPC:
   stage: test
   script:
@@ -83,7 +81,6 @@ test:Linux-x:
   dependencies:
     - build:Linux-x
 
-# Deployment Stages
 deploy:PowerPC:
   stage: deploy
   script:
